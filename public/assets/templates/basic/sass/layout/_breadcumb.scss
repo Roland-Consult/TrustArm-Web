@@ -1,0 +1,89 @@
+
+/*====================== Breadcumb Css Start ====================*/
+.breadcumb {
+    position: relative;
+    z-index: 1;
+    padding: 140px 0 70px;
+    z-index: 1;
+    background-color: hsl(var(--black));
+    @include msm-screen {
+        padding: 120px 0 60px;
+    }
+    .shape {
+        border: 7px solid hsl(var(--white) /.3);
+        border-radius: 50%;
+        &.shape-1 {
+            width: 80px;
+            right: 12%;
+            top: 49%;
+            border: 0;
+            @include msm-screen {
+                width: 60px;
+                top: 25%;
+            }
+            @include xxsm-screen {
+                width: 45px;
+                top: 25%;
+            }
+            @include msm-screen {
+                top: 52%;
+            }
+        } 
+        &.shape-3 {
+            border: 0px;
+            bottom: 25%;
+            left: 40%;
+            z-index: -1;
+            &.eight {
+                width: 100px;            
+                @include lg-screen {
+                    top: 42%;
+                }
+                @include msm-screen {
+                    width: 75px;
+                }
+                @include xxsm-screen {
+                    width: 35px;
+                    top: 42%;
+                    display: none;
+                }
+            }
+        }
+    }
+    &__wrapper {
+        text-align: left;
+    }
+    &__title {
+        margin-bottom: 10px;
+        color: hsl(var(--white)); 
+    }
+    &__list {
+        display: flex;
+        flex-wrap: wrap;
+        position: absolute;
+        bottom: -21px;
+        background: hsl(var(--base));
+        padding: 10px 17px;
+    }
+    &__item{
+        color: hsl(var(--white)); 
+        padding: 0 5px;
+        font-weight: 400;
+        font-size: 16px;
+            @include msm-screen {
+                font-size: 15px;
+            }
+        &-text {
+            color: hsl(var(--white)); ;
+        }
+    }
+    &__link {
+        color: hsl(var(--white));  
+        font-weight: 500;
+        transition: all .4s;
+        &:hover {
+            color: hsl(var(--dark)); ;
+        }
+    }
+}
+// ====================== Breadcumb Css End ====================
