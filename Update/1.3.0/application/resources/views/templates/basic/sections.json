@@ -1,0 +1,263 @@
+{
+    "banner": {
+        "builder": true,
+
+        "name": "Banner Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text",
+            "button":"text",
+            "images":{
+                "animation_img1":{
+                    "size":"200x200"
+                },
+                "animation_img2":{
+                    "size":"200x200"
+                },
+                "animation_img3":{
+                    "size":"200x200"
+                },
+                "animation_img4":{
+                    "size":"200x200"
+                }
+            }
+
+        }
+    },
+    "feature": {
+        "builder": true,
+        "name": "Feature Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "title": "text",
+            "description": "textarea",
+            "feature_icon": "icon",
+            "modal": true
+        }
+    },
+    "about": {
+        "builder": true,
+        "name": "About Us",
+        "content": {
+            "images":{
+
+                "about_image":{
+                    "size":"709x586",
+                    "thumb":"100x100"
+                }
+            },
+            "heading": "text",
+            "subheading": "text",
+            "description": "textarea",
+            "video_link": "text"
+        }
+    },
+
+    "choose_us":{
+        "builder":true,
+        "name":"Choose Us",
+        "content":{
+            "heading":"text",
+            "subheading":"text",
+            "description":"textarea"
+        },
+        "element":{
+            "images":{
+                "choose_img":{
+                    "size":"512x512"
+                }
+
+            },
+            "title":"text",
+            "description":"textarea",
+            "modal":false
+        }
+    },
+
+    "newsletter":{
+        "builder":true,
+        "name":"Newsletter",
+        "content":{
+            "heading":"text",
+            "subheading":"text"
+        }
+    },
+
+    "work_process":{
+        "builder":true,
+        "name":"Work Process",
+        "content":{
+            "heading":"text",
+            "subheading":"text",
+            "purchaser":"text",
+            "goodsOrService":"text",
+            "paymentToSeller":"text",
+            "dischargesInstallment":"text",
+            "description":"textarea",
+            "images":{
+                "work_process_img":{
+                    "size":"709x586"
+                }
+            }
+
+
+        }
+    },
+
+    "about_dark": {
+        "builder": false,
+        "name": "About Us Dark",
+        "content": {
+
+        }
+    },
+    "service": {
+        "builder": true,
+        "name": "Service Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text",
+            "description":"textarea"
+        }
+
+    },
+    "counter": {
+        "builder": true,
+        "name": "Counter Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "title": "text",
+            "counter_digit": "text",
+            "sub_title": "text",
+            "counter_icon": "icon",
+            "counter_icon_2": "icon",
+            "modal": true
+        }
+    },
+    "policy_pages": {
+        "builder": true,
+        "no_selection":true,
+        "name": "Policy Contents",
+        "element": {
+            "title": "text",
+            "details": "textarea-rich",
+            "modal": false
+        }
+    },
+    "faq": {
+        "builder": true,
+        "name": "FAQ Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text",
+            "description":"textarea"
+        },
+        "element": {
+            "question": "text",
+            "answer": "textarea-rich",
+            "modal": false
+        }
+    },
+
+    "testimonial":{
+        "builder":true,
+        "name":"Testimonials",
+        "content":{
+            "heading":"text",
+            "subheading":"text",
+            "description":"textarea"
+        },
+        "element":{
+            "name":"text",
+            "designation":"text",
+            "description": "textarea",
+            "rating":"text",
+            "images":{
+                "client_img":{
+                    "size":"256x244"
+                }
+            },
+            "modal":true
+        }
+    },
+    "blog": {
+        "builder": true,
+        "name": "Blog Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text",
+            "description":"textarea"
+        },
+        "element": {
+            "images":{
+                "blog_image":{
+                    "size":"728x465",
+                    "thumb":"120x80"
+                }
+            },
+            "title": "text",
+            "author":"text",
+            "description": "textarea-rich",
+            "button":"text",
+            "modal": false
+        }
+    },
+    "subscribe": {
+        "builder": true,
+        "name": "Subscribe Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        }
+    },
+    "social_icon": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Social Icons",
+        "element": {
+            "title": "text",
+            "social_icon": "icon",
+            "url": "text",
+            "modal": false
+        }
+    },
+    "contact_us": {
+        "builder": true,
+        "no_selection":true,
+        "name": "Contact Us",
+        "content": {
+            "description": "textarea",
+            "email_address": "text",
+            "address": "text",
+            "contact_number": "text",
+            "latitude": "text",
+            "longitude": "text",
+            "copyright_text": "textarea-rich"
+
+        }
+    },
+
+    "partner":{
+        "builder":true,
+        "name":"Partner",
+        "content":{
+            "heading":"text",
+            "subheading":"text",
+            "description":"textarea"
+        },
+        "element":{
+            "images":{
+                "partner_img":{
+                    "size":"130x50"
+                }
+            },
+            "modal":false
+        }
+    }
+}
