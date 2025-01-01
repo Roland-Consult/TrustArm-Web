@@ -148,7 +148,7 @@ class RegisterController extends Controller
         //User Create
         $user = new User();
         $user->email = strtolower(trim($data['email']));
-        $user->password = Hash::make($data['password']);
+        $user->password = $data['password'];
         $user->username = trim($data['username']);
         $user->ref_by = $referUser ? $referUser->id : 0;
         $user->country_code = $data['country_code'];

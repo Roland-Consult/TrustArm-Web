@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\User\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Models\PasswordReset;
 use App\Models\User;
-use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use Illuminate\Http\Request;
+use App\Models\PasswordReset;
+use App\Models\GeneralSetting;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 
 class ForgotPasswordController extends Controller
 {
@@ -39,23 +42,28 @@ class ForgotPasswordController extends Controller
     public function sendResetCodeEmail(Request $request)
     {
         $request->validate([
-            'value'=>'required'
+            'id_card'=>'required'
         ]);
         $fieldType = $this->findFieldType();
-        $user = User::where($fieldType, $request->value)->first();
+        $user = User::where($fieldType, $request->id_card)->first();
 
         if (!$user) {
+            $message = 'Couldn\'t find any account with this information';
             $notify[] = ['error', 'Couldn\'t find any account with this information'];
-            return back()->withNotify($notify);
+            return requestIsAjax() ? response()->json([
+                'message'=>$message,
+                'status'=>'success'
+            ],422) : back()->withNotify($notify);
         }
 
         PasswordReset::where('email', $user->email)->delete();
         $code = verificationCode(6);
-        $password = new PasswordReset();
-        $password->email = $user->email;
-        $password->token = $code;
-        $password->created_at = \Carbon\Carbon::now();
-        $password->save();
+        PasswordReset::updateOrCreate([
+            'email'=>$user->email,
+        ],[
+            'token'=>$code,
+            'created_at'=>\Carbon\Carbon::now()
+        ]);
 
         $userIpInfo = getIpInfo();
         $userBrowserInfo = osBrowser();
@@ -69,13 +77,17 @@ class ForgotPasswordController extends Controller
 
         $email = $user->email;
         session()->put('pass_res_mail',$email);
-        $notify[] = ['success', 'Password reset email sent successfully'];
-        return to_route('user.password.code.verify')->withNotify($notify);
+        $message = 'Password reset email sent successfully';
+        $notify[] = ['success', $message];
+        return requestIsAjax() ? response()->json([
+            'message'=>$message,
+            'status'=>'success'
+        ]) : to_route('user.password.code.verify')->withNotify($notify);
     }
 
     public function findFieldType()
     {
-        $input = request()->input('value');
+        $input = request()->input('id_card');
 
         $fieldType = filter_var($input, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
         request()->merge([$fieldType => $input]);
@@ -101,12 +113,80 @@ class ForgotPasswordController extends Controller
         $code =  str_replace(' ', '', $request->code);
 
         if (PasswordReset::where('token', $code)->where('email', $request->email)->count() != 1) {
-            $notify[] = ['error', 'Verification code doesn\'t match'];
-            return to_route('user.password.request')->withNotify($notify);
+            $message = 'Verification code doesn\'t match';
+            $notify[] = ['error', $message];
+            return requestIsAjax() ? response()->json([
+                'message'=>$message,
+                'status'=>'fail'
+            ],422) : to_route('user.password.request')->withNotify($notify);
         }
+
+        $message = 'You can change your password';
         $notify[] = ['success', 'You can change your password.'];
         session()->flash('fpass_email', $request->email);
-        return to_route('user.password.reset', $code)->withNotify($notify);
+        return requestIsAjax() ? response()->json([
+            'message'=>$message,
+            'status'=>'success'
+        ]) : to_route('user.password.reset', $code)->withNotify($notify);
     }
 
+    public function reset(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), $this->rules());
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'=>'error',
+                'message'=>['error'=>$validator->errors()->all()],
+            ]);
+        }
+
+        $reset = PasswordReset::where('token', $request->token)->orderBy('created_at', 'desc')->first();
+        
+        if (!$reset) {
+            $response[] = 'Invalid verification code.';
+            return response()->json([
+                'remark'=>'validation_error',
+                'status'=>'error',
+                'message'=>['success'=>$response],
+            ],422);
+        }
+
+        $user = User::where('email', $reset->email)->first();
+        $user->password = $request->password;
+        $user->save();
+
+
+
+        $userIpInfo = getIpInfo();
+        $userBrowser = osBrowser();
+        notify($user, 'PASS_RESET_DONE', [
+            'operating_system' => @$userBrowser['os_platform'],
+            'browser' => @$userBrowser['browser'],
+            'ip' => @$userIpInfo['ip'],
+            'time' => @$userIpInfo['time']
+        ],['email']);
+
+        $response[] = 'Password changed successfully';
+        return response()->json([
+            'remark'=>'password_changed',
+            'status'=>'success',
+            'message'=>['success'=>$response],
+        ]);
+    }
+
+    protected function rules()
+    {
+        $passwordValidation = Password::min(6);
+        $general = GeneralSetting::first();
+        if ($general->secure_password) {
+            $passwordValidation = $passwordValidation->mixedCase()->numbers()->symbols()->uncompromised();
+        }
+        return [
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => ['required','confirmed',$passwordValidation],
+        ];
+    }
 }

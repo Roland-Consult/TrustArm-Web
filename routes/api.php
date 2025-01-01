@@ -56,7 +56,6 @@ Route::namespace('User')->name('api.')->group(function(){
 
         Route::controller('ForgotPasswordController')->group(function(){
             Route::post('password/email', 'sendResetCodeEmail')->name('password.email');
-            Route::post('password/verify-code', 'verifyCode')->name('password.verify.code');
             Route::post('password/reset', 'reset')->name('password.update');
         });
 	});
@@ -67,8 +66,8 @@ Route::namespace('User')->name('api.')->group(function(){
             Route::get('authorization', 'authorization')->name('authorization');
             Route::get('resend-verify/{type}', 'sendVerifyCode')->name('send.verify.code');
             Route::post('verify-email', 'emailVerification')->name('verify.email');
-            Route::post('verify-mobile', 'mobileVerification')->name('verify.mobile');
-            Route::post('verify-g2fa', 'g2faVerification')->name('go2fa.verify');
+            // Route::post('verify-mobile', 'mobileVerification')->name('verify.mobile');
+            // Route::post('verify-g2fa', 'g2faVerification')->name('go2fa.verify');
         });
 
         Route::middleware(['check.status'])->group(function () {

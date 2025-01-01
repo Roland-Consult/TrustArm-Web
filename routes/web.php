@@ -1,9 +1,7 @@
 <?php
 
-use App\Lib\Router;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\EscrowController;
-use App\Http\Controllers\User\Mail;
 
 Route::get('/clear', function(){
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');

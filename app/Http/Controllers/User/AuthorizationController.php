@@ -59,6 +59,13 @@ class AuthorizationController extends Controller
     {
         $user = auth()->user();
 
+        if($user->email_is_verified){
+            return response()->json([
+                'message'=>'Email is already verified',
+                'status'=>"success"
+            ]);
+        }
+
         if ($this->checkCodeValidity($user)) {
             $targetTime = $user->ver_code_send_at->addMinutes(2)->timestamp;
             $delay = $targetTime - time();
@@ -82,7 +89,10 @@ class AuthorizationController extends Controller
         ],[$type]);
 
         $notify[] = ['success', 'Verification code sent successfully'];
-        return back()->withNotify($notify);
+        return requestIsAjax() ? response()->json([
+            'message'=>'Verification code sent successfully',
+            'status'=>"success"
+        ]) : back()->withNotify($notify);
     }
 
     public function emailVerification(Request $request)
@@ -97,6 +107,7 @@ class AuthorizationController extends Controller
             $user->ev = 1;
             $user->ver_code = null;
             $user->ver_code_send_at = null;
+            $user->email_verified_at = now();
             $user->save();
 
             return requestIsAjax() ? response()->json([
