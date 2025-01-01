@@ -440,3 +440,8 @@ function gs()
     }
     return $general;
 }
+
+function requestIsAjax()
+{
+    return request()->is('api/*') ||  request()->wantsJson() || request()->ajax();
+}

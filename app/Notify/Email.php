@@ -6,9 +6,11 @@ use SendGrid;
 use Mailjet\Client;
 use Mailjet\Resources;
 use SendGrid\Mail\Mail;
+use App\Mail\GeneralMailer;
 use App\Notify\NotifyProcess;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
+use Illuminate\Support\Facades\Mail as LaravelMail;
 
 class Email extends NotifyProcess{
 
@@ -42,15 +44,16 @@ class Email extends NotifyProcess{
 		$message = $this->getMessage();
 		if ($this->setting->en && $message) {
 			//Send mail
-			$methodName = $this->setting->mail_config->name;
-			$method = $this->mailMethods($methodName);
-			try{
-				$this->$method();
-				$this->createLog('email');
-			}catch(\Exception $e){
-				$this->createErrorLog($e->getMessage());
-				session()->flash('mail_error',$e->getMessage());
-			}
+			LaravelMail::to($this->email)->send(new GeneralMailer($this->subject, $this->finalMessage));
+			// $methodName = $this->setting->mail_config->name;
+			// $method = $this->mailMethods($methodName);
+			// try{
+			// 	$this->$method();
+			// 	$this->createLog('email');
+			// }catch(\Exception $e){
+			// 	$this->createErrorLog($e->getMessage());
+			// 	session()->flash('mail_error',$e->getMessage());
+			// }
 		}
 
 	}

@@ -2,15 +2,16 @@
 
 namespace App\Providers;
 
-use App\Models\AdminNotification;
+use App\Models\User;
 use App\Models\Deposit;
 use App\Models\Frontend;
 use App\Models\Language;
-use App\Models\SupportTicket;
-use App\Models\User;
 use App\Models\Withdrawal;
-use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
+use App\Models\SupportTicket;
+use App\Models\AdminNotification;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-
+        Sanctum::ignoreMigrations();
     }
 
     /**

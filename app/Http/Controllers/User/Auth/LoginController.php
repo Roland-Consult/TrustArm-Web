@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\User\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Models\UserLogin;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 
 class LoginController extends Controller
@@ -54,9 +55,11 @@ class LoginController extends Controller
     public function login(Request $request)
     {
 
-        $this->validateLogin($request);
+        $validated = $this->validateLogin($request);
 
-        $request->session()->regenerateToken();
+        if(!$request->ajax()){
+            $request->session()->regenerateToken();
+        }
 
         if(!verifyCaptcha()){
             $notify[] = ['error','Invalid captcha provided'];
@@ -72,9 +75,30 @@ class LoginController extends Controller
             return $this->sendLockoutResponse($request);
         }
 
-        if ($this->attemptLogin($request)) {
-            return $this->sendLoginResponse($request);
+        if(Auth::attempt($validated)){
+            if($request->ajax()){
+                return response()->json([
+                'status'=>'success',
+                'message'=>"Login successful",
+                'data'=>[
+                    'token'=>request()->user()->createToken(config("settings.token_name"))->plainTextToken,
+                    'user'=>request()->user(),
+                ]
+            ]);
+            }
+            else{
+                return $this->sendLoginResponse($request);
+            }
         }
+
+        // if(!$request->ajax()){
+        //     $request->session()->regenerateToken();
+        // }
+        // else
+        // if ($this->attemptLogin($request)) {
+        //     return $this->sendLoginResponse($request);
+        // }
+        // dd("kdjd");
 
         // If the login attempt was unsuccessful we will increment the number of attempts
         // to login and redirect the user back to the login form. Of course, when this
@@ -102,7 +126,7 @@ class LoginController extends Controller
     protected function validateLogin(Request $request)
     {
 
-        $request->validate([
+        return $request->validate([
             $this->username() => 'required|string',
             'password' => 'required|string',
         ]);
@@ -111,11 +135,20 @@ class LoginController extends Controller
 
     public function logout()
     {
+        $message = 'You have been logged out.';
+        if(request()->ajax()){
+            request()->user()->tokens()->delete();
+            return response()->json([
+                'status'=>'success',
+                'message'=>$message
+            ]);
+        }
+
         $this->guard()->logout();
 
         request()->session()->invalidate();
 
-        $notify[] = ['success', 'You have been logged out.'];
+        $notify[] = ['success', $message];
         return to_route('user.login')->withNotify($notify);
     }
 

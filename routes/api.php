@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::namespace('Api')->name('api.')->group(function(){
-
+// Route::namespace('Api')->name('api.')->group(function(){
+Route::namespace('User')->name('api.')->group(function(){
     Route::get('general-setting',function()
     {
         $general = GeneralSetting::first();
@@ -62,7 +62,6 @@ Route::namespace('Api')->name('api.')->group(function(){
 	});
 
     Route::middleware('auth:sanctum')->group(function () {
-
         //authorization
         Route::controller('AuthorizationController')->group(function(){
             Route::get('authorization', 'authorization')->name('authorization');
@@ -126,7 +125,6 @@ Route::namespace('Api')->name('api.')->group(function(){
                     Route::get('deposit/manual', 'manualDepositConfirm')->name('deposit.manual.confirm');
                     Route::post('deposit/manual', 'manualDepositUpdate')->name('deposit.manual.update');
                 });
-
             });
         });
 

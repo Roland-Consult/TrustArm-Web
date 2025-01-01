@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CheckStatus
 {
@@ -22,7 +22,7 @@ class CheckStatus
             if ($user->status  && $user->ev  && $user->sv  && $user->tv) {
                 return $next($request);
             } else {
-                if ($request->is('api/*')) {
+                if (requestIsAjax()) {
                     $notify[] = 'You need to verify your account first.';
                     return response()->json([
                         'remark'=>'unverified',
@@ -34,7 +34,7 @@ class CheckStatus
                             'mobile_verified'=>$user->sv,
                             'twofa_verified'=>$user->tv,
                         ],
-                    ]);
+                    ],403);
                 }else{
                     return to_route('user.authorization');
                 }
