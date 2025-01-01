@@ -12,7 +12,6 @@ class AuthorizationController extends Controller
 {
     protected function checkCodeValidity($user,$addMin = 2)
     {
-        return false;
         if (!$user->ver_code_send_at){
             return false;
         }

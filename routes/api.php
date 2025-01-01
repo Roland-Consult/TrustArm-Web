@@ -75,9 +75,9 @@ Route::namespace('User')->name('api.')->group(function(){
             Route::post('user-data-submit', 'UserController@userDataSubmit')->name('data.submit');
 
             Route::middleware('registration.complete')->group(function(){
-                Route::get('dashboard',function(){
-                    return auth()->user();
-                });
+                // Route::get('dashboard',function(){
+                //     return auth()->user();
+                // });
 
                 Route::get('user-info',function(){
                     $notify[] = 'User information';
