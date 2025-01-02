@@ -27,7 +27,7 @@ class ProfileController extends Controller
             'lastname.required'=>'Last name field is required'
         ]);
 
-        $user = auth()->user();
+        $user = request()->user();
 
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;
@@ -41,8 +41,13 @@ class ProfileController extends Controller
         ];
 
         $user->save();
-        $notify[] = ['success', 'Profile has been updated successfully'];
-        return back()->withNotify($notify);
+        $message = 'Profile has been updated successfully';
+        $notify[] = ['success', $message];
+        return requestIsAjax() ? response()->json([
+            'remark'=>'profile_updated',
+            'status'=>'success',
+            'message'=>$message,
+        ]): back()->withNotify($notify);
     }
 
     public function changePassword()
@@ -53,7 +58,6 @@ class ProfileController extends Controller
 
     public function submitPassword(Request $request)
     {
-
         $passwordValidation = Password::min(6);
         $general = gs();
         if ($general->secure_password) {
@@ -65,17 +69,27 @@ class ProfileController extends Controller
             'password' => ['required','confirmed',$passwordValidation]
         ]);
 
-        $user = auth()->user();
+        $messages = [
+            'success'=>'Password change successfully',
+            'error'=>'The password doesn\'t match!',
+        ];
+
+        $user = request()->user();
         if (Hash::check($request->current_password, $user->password)) {
             $password = Hash::make($request->password);
             $user->password = $password;
             $user->save();
-            $notify[] = ['success', 'Password changes successfully'];
-            return back()->withNotify($notify);
+
+            $status = 'success';
         } else {
-            $notify[] = ['error', 'The password doesn\'t match!'];
-            return back()->withNotify($notify);
+            $status = 'error';
         }
+        return requestIsAjax() ? 
+            response()->json([
+                'status'=>$status,
+                'message'=>$messages[$status]
+            ]) : 
+            back()->withNotify($notify[] = [$status, $messages[$status]]);
     }
 
     public function imageUpdate(Request $request)
@@ -83,7 +97,7 @@ class ProfileController extends Controller
         $this->validate($request, [
             'image' => ['nullable','image',new FileTypeValidate(['jpg','jpeg','png'])]
         ]);
-        $user = auth()->user();
+        $user = request()->user();
         if ($request->hasFile('image'))
         {
             $path = getFilePath('userProfile');
@@ -94,7 +108,13 @@ class ProfileController extends Controller
             $user->image = $filename;
         }
         $user->save();
-        $notify[] = ['success', 'Profile image has been updated successfully'];
-        return to_route('user.home')->withNotify($notify);
+
+        $message = 'Profile image has been updated successfully';
+        $notify[] = ['success', $message];
+        return requestIsAjax() ? 
+        response()->json([
+            'status'=>'success',
+            'message'=>$message
+        ]) : to_route('user.home')->withNotify($notify);
     }
 }

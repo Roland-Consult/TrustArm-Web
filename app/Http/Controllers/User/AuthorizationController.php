@@ -59,6 +59,13 @@ class AuthorizationController extends Controller
     {
         $user = auth()->user();
 
+        if($user->email_is_verified){
+            return response()->json([
+                'message'=>'Email is already verified',
+                'status'=>"success"
+            ]);
+        }
+
         if ($this->checkCodeValidity($user)) {
             $targetTime = $user->ver_code_send_at->addMinutes(2)->timestamp;
             $delay = $targetTime - time();
@@ -82,7 +89,10 @@ class AuthorizationController extends Controller
         ],[$type]);
 
         $notify[] = ['success', 'Verification code sent successfully'];
-        return back()->withNotify($notify);
+        return requestIsAjax() ? response()->json([
+            'message'=>'Verification code sent successfully',
+            'status'=>"success"
+        ]) : back()->withNotify($notify);
     }
 
     public function emailVerification(Request $request)
@@ -97,10 +107,16 @@ class AuthorizationController extends Controller
             $user->ev = 1;
             $user->ver_code = null;
             $user->ver_code_send_at = null;
+            $user->email_verified_at = now();
             $user->save();
-            return to_route('user.home');
+
+            return requestIsAjax() ? response()->json([
+                'message'=>"Email verified successfully",
+                'status'=>"success"
+            ]) : 
+            to_route('user.home');
         }
-        throw ValidationException::withMessages(['code' => 'Verification code didn\'t match!']);
+        throw ValidationException::withMessages(['code' => 'Invalid code']);
     }
 
     public function mobileVerification(Request $request)
@@ -134,5 +150,44 @@ class AuthorizationController extends Controller
             $notify[] = ['error','Wrong verification code'];
         }
         return back()->withNotify($notify);
+    }
+
+    public function authorization()
+    {
+        $user = auth()->user();
+        if (!$user->status) {
+            $type = 'ban';
+        }elseif(!$user->ev) {
+            $type = 'email';
+            $notifyTemplate = 'EVER_CODE';
+        }elseif (!$user->sv) {
+            $type = 'sms';
+            $notifyTemplate = 'SVER_CODE';
+        }elseif (!$user->tv) {
+            $type = '2fa';
+        }else{
+            $notify[] = 'You are already verified';
+            return response()->json([
+                'remark'=>'already_verified',
+                'status'=>'error',
+                'message'=>['error'=>$notify],
+            ]);
+        }
+
+        if (!$this->checkCodeValidity($user) && ($type != '2fa') && ($type != 'ban')) {
+            $user->ver_code = verificationCode(6);
+            $user->ver_code_send_at = Carbon::now();
+            $user->save();
+            notify($user, $notifyTemplate, [
+                'code' => $user->ver_code
+            ],[$type]);
+        }
+
+        $notify[] = 'Verify your account';
+        return response()->json([
+            'remark'=>'code_sent',
+            'status'=>'success',
+            'message'=>['success'=>$notify],
+        ]);
     }
 }

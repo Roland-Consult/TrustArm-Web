@@ -62,7 +62,6 @@ class RegisterController extends Controller
         $passwordValidation = Password::min(6);
         if ($general->secure_password) {
             $passwordValidation = $passwordValidation->mixedCase()->numbers()->symbols()->uncompromised();
-
         }
         $agree = 'nullable';
         if ($general->agree) {
@@ -89,9 +88,11 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        $this->validator($request->all())->validate();
-
-        $request->session()->regenerateToken();
+        $validated = $this->validator($request->all())->validate();
+        
+        if(!$request->ajax()){
+            $request->session()->regenerateToken();
+        }
 
         if(preg_match("/[^a-z0-9_]/", trim($request->username))){
             $notify[] = ['info', 'Username can contain only small letters, numbers and underscore.'];
@@ -110,11 +111,18 @@ class RegisterController extends Controller
             $notify[] = ['error', 'The mobile number already exists'];
             return back()->withNotify($notify)->withInput();
         }
-
-        event(new Registered($user = $this->create($request->all())));
+        
+        event(new Registered($user = $this->create($validated)));
 
         $this->guard()->login($user);
 
+        if($request->ajax()){
+            $token = $user->createToken(config("settings.token_name"));
+            return response()->json([
+                'data'=>$user,
+                'token'=>$token->plainTextToken
+            ]);
+        }
         return $this->registered($request, $user)
             ?: redirect($this->redirectPath());
     }
@@ -140,7 +148,7 @@ class RegisterController extends Controller
         //User Create
         $user = new User();
         $user->email = strtolower(trim($data['email']));
-        $user->password = Hash::make($data['password']);
+        $user->password = $data['password'];
         $user->username = trim($data['username']);
         $user->ref_by = $referUser ? $referUser->id : 0;
         $user->country_code = $data['country_code'];

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Validator;
 
-class UserController extends Controller
+class UserController extends Controller //todo: Delete this class
 {
     public function userDataSubmit(Request $request)
     {

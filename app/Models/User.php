@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+    use HasApiTokens;
 
     /**
      * The attributes that should be hidden for arrays.
@@ -29,6 +32,9 @@ class User extends Authenticatable
         'ver_code_send_at' => 'datetime'
     ];
 
+    protected $append = [
+        'email_is_verified'
+    ];
 
     public function loginLogs()
     {
@@ -102,5 +108,16 @@ class User extends Authenticatable
     {
         return $this->where('balance','>', 0);
     }
-
+    protected function password(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => Hash::make($value),
+        );
+    }
+    protected function emailIsVerified(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->email_verified_at ? true : false,
+        );
+    }
 }

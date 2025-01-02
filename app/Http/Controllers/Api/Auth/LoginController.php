@@ -113,7 +113,7 @@ class LoginController extends Controller
 
     public function logout()
     {
-        auth()->user()->tokens()->delete();
+        request()->user()->tokens()->delete();
 
         $notify[] = 'Logout Successful';
         return response()->json([

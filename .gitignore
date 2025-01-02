@@ -13,3 +13,6 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+database.sql:Zone.Identifier
+storage/debugbar/
+assets/images/user/profile/*

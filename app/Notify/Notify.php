@@ -98,6 +98,7 @@ class Notify
 		}else{
 			$methods = $this->notifyMethods();
 		}
+        // dd($methods);
 
         //send the notification via methods one by one
 		foreach($methods as $method){
