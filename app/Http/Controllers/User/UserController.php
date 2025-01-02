@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Lib\FormProcessor;
-use App\Lib\GoogleAuthenticator;
 use App\Models\Form;
+use App\Models\Escrow;
 use App\Models\Deposit;
+use App\Lib\FormProcessor;
 use App\Models\Withdrawal;
 use App\Models\Transaction;
-use App\Models\Escrow;
 use Illuminate\Http\Request;
+use App\Lib\GoogleAuthenticator;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -41,7 +42,7 @@ class UserController extends Controller
     public function depositHistory(Request $request)
     {
         $pageTitle = 'Deposit History';
-        $deposits = auth()->user()->deposits();
+        $deposits = request()->user()->deposits();
         if ($request->search) {
             $deposits = $deposits->where('trx',$request->search);
         }
@@ -74,7 +75,7 @@ class UserController extends Controller
 
     public function create2fa(Request $request)
     {
-        $user = auth()->user();
+        $user = request()->user();
         $this->validate($request, [
             'key' => 'required',
             'code' => 'required',
@@ -98,7 +99,7 @@ class UserController extends Controller
             'code' => 'required',
         ]);
 
-        $user = auth()->user();
+        $user = request()->user();
         $response = verifyG2fa($user,$request->code);
         if ($response) {
             $user->tsc = null;
@@ -136,16 +137,35 @@ class UserController extends Controller
     public function kycForm()
     {
         if (auth()->user()->kv == 2) {
+            $message = 'Your KYC is under review';
             $notify[] = ['error','Your KYC is under review'];
-            return to_route('user.home')->withNotify($notify);
+            return requestIsAjax() ? response()->json([
+                'remark'=>'under_review',
+                'status'=>'success',
+                'message'=>$message,
+            ]) : to_route('user.home')->withNotify($notify);
         }
         if (auth()->user()->kv == 1) {
-            $notify[] = ['error','You are already KYC verified'];
-            return to_route('user.home')->withNotify($notify);
+            $message = 'You are already KYC verified';
+            $notify[] = ['success',$message];
+            return requestIsAjax() ? response()->json([
+                'remark'=>'already_verified',
+                'status'=>'error',
+                'message'=>$message,
+            ]) : to_route('user.home')->withNotify($notify);
         }
         $pageTitle = 'KYC Form';
         $form = Form::where('act','kyc')->first();
-        return view($this->activeTemplate.'user.kyc.form', compact('pageTitle','form'));
+
+        $notify[] = 'KYC field is below';
+        return requestIsAjax() ? response()->json([
+            'remark'=>'kyc_form',
+            'status'=>'success',
+            'message'=>['success'=>$notify],
+            'data'=>[
+                'form'=>$form->form_data
+            ]
+        ]): view($this->activeTemplate.'user.kyc.form', compact('pageTitle','form'));
     }
 
     public function kycData()
@@ -163,13 +183,17 @@ class UserController extends Controller
         $validationRule = $formProcessor->valueValidation($formData);
         $request->validate($validationRule);
         $userData = $formProcessor->processFormData($request, $formData);
-        $user = auth()->user();
+        $user = request()->user();
         $user->kyc_data = $userData;
         $user->kv = 2;
         $user->save();
 
-        $notify[] = ['success','KYC data submitted successfully'];
-        return to_route('user.home')->withNotify($notify);
+        $message = 'KYC data submitted successfully';
+        $notify[] = ['success',$message];
+        return requestIsAjax() ? response()->json([
+            'status'=>'success',
+            'message'=>$message ,
+        ]): to_route('user.home')->withNotify($notify);
 
     }
 
@@ -197,7 +221,7 @@ class UserController extends Controller
 
     public function userDataSubmit(Request $request)
     {
-        $user = auth()->user();
+        $user = request()->user();
         if ($user->reg_step == 1) {
             return to_route('user.home');
         }
@@ -222,4 +246,39 @@ class UserController extends Controller
 
     }
 
+    public function submitProfile(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'firstname'=>'required',
+            'lastname'=>'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'remark'=>'validation_error',
+                'status'=>'error',
+                'message'=>['error'=>$validator->errors()->all()],
+            ]);
+        }
+
+        $user = request()->user();
+
+        $user->firstname = $request->firstname;
+        $user->lastname = $request->lastname;
+        $user->address = [
+            'country'=>@$user->address->country,
+            'address'=>$request->address,
+            'state'=>$request->state,
+            'zip'=>$request->zip,
+            'city'=>$request->city,
+        ];
+        $user->save();
+
+        $notify[] = 'Profile has been updated successfully';
+        return response()->json([
+            'remark'=>'profile_updated',
+            'status'=>'success',
+            'message'=>['success'=>$notify],
+        ]);
+    }
 }
